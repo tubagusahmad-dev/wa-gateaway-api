@@ -1,0 +1,146 @@
+<html>
+    <head>
+        <title>Simple WA Gateaway</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/lib/css/tubagus_css/style.css"></link>
+    </head>
+    <body>
+
+        <div class="main-grid">
+            <div class="qr-container">
+                <div class="qr-card">
+                    <div class="qr-view">
+                        <img id="qr-img"></img>
+                        <div id="qr-loader" class="loader"></div>
+                    </div>
+                    <div id="txt-device">AC50BX0SAW3</div>
+                    <div id="txt-status">Connecting...</div>
+                </div>
+            </div>
+
+            <div class="device-container">
+                <h1><center>DEVICES</center></h1>
+                <div class="devices">
+                
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="/lib/js/jquery/jquery.min.js"></script>
+        <script type="text/javascript" src="/socket.io/socket.io.min.js"></script>
+        <script type="text/javascript" src="/lib/js/feather/feather.min.js"></script>
+        <script type="text/javascript">
+            
+            var devices = localStorage.getItem("devices");
+            var socket = io();
+
+            $(window).on('load', () => {
+                initializeWA(randomString());
+                refreshDevices();
+                feather.replace();
+            });
+
+            // Memanggil 
+            const initializeWA = (id) => {
+                socket.emit('wa:connect', id);
+                $('#qr-img').hide();
+                $('#qr-loader').show();
+                $('#txt-device').text(id);
+                $('#txt-status').text("Connecting...");
+                socket.on(`wa:qr ${id}`, (qrUrl) => {
+                    $('#qr-img').attr('src', qrUrl);
+                    $('#qr-img').show();
+                    $('#qr-loader').hide();
+                    $('#txt-status').text("QR Code Received Scan Please!!");
+                });
+
+                socket.on(`wa:connected ${id}`, (qrUrl) => {
+                    $('#txt-status').text("Device Connected To WA Web");
+                    $('#qr-img').hide();
+
+                    // Menyimpan ID device yg terkoneksi
+                    saveDevice(id);
+
+                    refreshDevices();
+
+                    // Ketika device sudah terkoneksi maka
+                    // Automatis merequest QR untuk device baru
+                    setTimeout(() => {
+                        initializeWA(randomString());
+                    }, 6000);
+                });
+            }
+
+            const refreshDevices = () => {
+                let devices = loadDevices();
+                let html = ``;
+                for (var i = 0; i < devices.length; i++){
+                    html = html + `<div class="device">
+                        <div style="float: left;">${devices[i]}</div>
+                        <div style="margin-left:40px; justify-content: start; align-items: flex-start; align-content: flex-start;">
+                            <i style="width:18px;height:18px;margin-left:10px;margin-right:10px;" data-feather="copy"></i>
+                            <i onclick="logout('${devices[i]}')" style="width:18px;height:18px;margin-left:10px;margin-right:10px;" data-feather="trash"></i>
+                        </div>
+                    </div>`;
+                }
+                $('.devices').html(html);
+                feather.replace();
+            }
+
+            const saveDevice = (deviceId) => {
+                let devices = loadDevices();
+                devices.push(deviceId);
+                localStorage.setItem('devices', JSON.stringify(devices));
+            }
+
+            const loadDevices = () => {
+                let devices = localStorage.getItem('devices');
+                if (devices != null){
+                    return JSON.parse(devices);
+                }else{
+                    return [];
+                }
+            }
+
+            const deleteDevice = (deviceId) => {
+                let device = loadDevices();
+                device.remove(deviceId);
+                localStorage.setItem('devices', JSON.stringify(devices));
+            }
+
+            const logout = (deviceId) => {
+                $.ajax({
+                    url: `/${deviceId}/logout`,
+                    type: 'POST',
+                    success: (data) => {
+                        alert(data);
+                        deleteDevice(deviceId);
+                        refreshDevices();
+                    }
+                });
+            }
+
+            const randomString = () => {
+                var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                var string_length = 20;
+                var randomstring = '';
+                for (var i=0; i<string_length; i++) {
+                    var rnum = Math.floor(Math.random() * chars.length);
+                    randomstring += chars.substring(rnum,rnum+1);
+                }
+                return randomstring;
+            }
+
+            Array.prototype.remove = () => {
+                var what, a = arguments, L = a.length, ax;
+                while (L && this.length) {
+                    what = a[--L];
+                    while ((ax = this.indexOf(what)) !== -1) {
+                        this.splice(ax, 1);
+                    }
+                }
+                return this;
+            };
+        </script>
+    </body>
+</html>

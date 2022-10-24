@@ -1,0 +1,103 @@
+html, body {
+    padding: 0px;
+    margin: 0px;
+    font-family: Ubuntu;
+}
+
+.main-grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: 40% 60%;
+    min-height: 100%;
+}
+
+.qr-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    height: 100%;
+}
+
+.qr-container .qr-card {
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+
+.qr-container .qr-card .qr-view {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: inline-block;
+}
+
+.qr-container .qr-card .qr-view #qr-img {
+    width: 300px;
+    height: 300px;
+    display: none;
+}
+
+.qr-container .qr-card .qr-view .loader {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    z-index: 1;
+    top: 40%;
+    left: 40%;
+}
+
+.qr-container .qr-card #txt-device {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: green;
+}
+
+.qr-container .qr-card #txt-status {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: black;
+}
+
+.device-container {
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.device-container .devices {
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+
+.device-container .devices .device {
+    display: flex;
+    justify-content: start;
+    align-items: flex-start;
+    align-content: flex-start;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 15px;
+    border: 1px solid blue;
+}
+
+.loader {
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+  
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
