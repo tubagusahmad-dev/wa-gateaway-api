@@ -42,6 +42,14 @@ const connectWA = async (io, http, idStr) => {
     });
 
     conn.ev.on('creds.update', saveCreds);
+
+    io.on(`wa:logout ${idStr}`, () => {
+
+    });
+
+    const updateDevice = (deviceID, data) => {
+
+    }
 }
 
 module.exports = connectWA;

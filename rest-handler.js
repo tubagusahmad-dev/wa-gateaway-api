@@ -1,57 +1,88 @@
 const formidable = require('formidable');
 const fs = require('fs');
 
+const APP_HOST = process.env.APP_HOST;
+const APP_PORT = parseInt(process.env.APP_PORT);
+
 const handleRest = (http, wa, idStr) => {
 
     http.post(`/${idStr}/send/message`, async (req, res) => {
         
-        if (req.body.receiver == undefined) {
+        if (req.body.receiver == undefined && req.body.receivers == undefined) {
             res.status(500).send("Input Receiver ID").end();
             return;
         }
 
-        let receiver = req.body.receiver.replaceAll('+', '') + "@s.whatsapp.net";
-        let text = "";
-
-        if (req.body.message !== undefined) {
-            text = req.body.message.text;
-        }
-
-        wa.sendMessage(receiver, {text: text});
-        res.status(200).send("Message Sent!").end();
-    });
-
-    //Bulk Message
-    http.post(`/${idStr}/send/message/bulk`, async (req, res) => {
-
-        if (req.body.receiver == undefined) {
-            res.status(500).send("Input Receiver ID").end();
-            return;
-        }
-
-        let receiver = req.body.receiver.replaceAll('+', '') + "@s.whatsapp.net";
+        let receivers = [];
         let messages = [];
-        
-        if (req.body.messages !== undefined && req.body.messages instanceof Array) {
-            messages = req.body.messages;
-            for (var i = 0; i < messages.length; i++){
-                wa.sendMessage(receiver, {text: messages[i].text});
+
+        if (req.body.receiver) {
+            let receiver = req.body.receiver.replaceAll('+', '') + "@s.whatsapp.net";
+            receivers = [receiver];
+        } else if (req.body.receivers) {
+            let unrealReceivers = req.body.receivers;
+            for (var i = 0; i < unrealReceivers.length; i++) {
+                let receiver = unrealReceivers[i].replaceAll('+', '') + "@s.whatsapp.net";
+                receivers.push(receiver);
             }
-            res.status(200).send("Message Sent!").end();
-            return;
         }
+
+        if (req.body.message) {
+            messages = [req.body.message];
+        }else if (req.body.messages) {
+            messages = req.body.messages;
+        }
+
+        await sendMessages(receivers, messages, wa, res);
     });
 
-    http.post(`/${idStr}/send/image`, async (req, res, next) => {
+    http.post(`/${idStr}/send/media`, async (req, res, next) => {
+
         const form = formidable({multiples: true});
-        form.parse(req, (err, fields, files) => {
+        let media = null;
+        let mimeType = null;
+        let message = {};
+        let caption = "";
+
+        if (fields.caption) {
+            caption = fields.caption;
+        }
+
+        form.parse(req, async (err, fields, files) => {
             if (err) {
-                res.status(500).send("Error").end();
+                res.status(500).send("Uploading Media Error").end();
                 return;
             }
 
-            if (files.image == undefined) {
-                res.status(500).send("Input an Image").end();
+            if (files.image) {
+                media = files.image;
+                mimeType = "image/*";
+                message = {
+                    image:{url: `http://${APP_HOST}:${APP_PORT}/file/${mimeType.split('/')[0]}/` + media.originalFilename},
+                    caption: caption
+                }
+            }else if (files.video) {
+                media = files.video;
+                mimeType = "video/*";
+                message = {
+                    video:{url: __dirname + `/assets/${mimeType.split('/')[0]}/` + media.originalFilename},
+                    caption: caption,
+                    gifPlayback: true
+                }
+            }else if (files.audio) {
+                media = files.audio;
+                mimeType = "audio/mp4";
+                message = {
+                    audio:{url: __dirname + `/assets/${mimeType.split('/')[0]}/` + media.originalFilename}
+                }
+            }else if (files.file) {
+                media = files.file;
+                mimeType = "file/*";
+                message = {
+                    url: __dirname + `/assets/${mimeType.split('/')[0]}/` + media.originalFilename
+                }
+            }else {
+                res.status(500).send("Upload Media File To Send").end();
                 return;
             }
 
@@ -60,42 +91,21 @@ const handleRest = (http, wa, idStr) => {
                 return;
             }
 
-            let caption = fields.caption;
             let receiver = fields.receiver.replaceAll('+', '') + "@s.whatsapp.net";
-            let oldPath = files.image.filepath;
-            let newPath = __dirname + "/assets/images/" + files.image.originalFilename;
+            let oldPath = media.filepath;
+            let newPath = __dirname + `/assets/${mimeType.split('/')[0]}/` + media.originalFilename;
 
-            if (fields.caption == undefined) {
-                caption = "";
-            }
-
-            fs.rename(oldPath, newPath, (err) => {
+            fs.rename(oldPath, newPath, async (err) => {
                 if (err) {
-                    res.status(500).send("FS Error").end();
+                    res.status(500).send("FS Server Error").end();
                     return;
                 }
 
-                wa.sendMessage(receiver, {
-                    image:{url: "http://localhost:3000/file/image/" + files.image.originalFilename},
-                    caption: caption
-                });
+                await wa.sendMessage(receiver, message);
 
-                res.status(200).send("Image Sent!").end();
+                res.status(200).send("Media Sent!").end();
             });
- 
         });
-    });
-
-    http.post(`/${idStr}/send/video`, async (req, res) => {
-        
-    });
-
-    http.post(`/${idStr}/send/audio`, async (req, res) => {
-        
-    });
-
-    http.post(`/${idStr}/send/document`, async (req, res) => {
-        
     });
 
     http.post(`/${idStr}/logout`, async (req, res) => {
@@ -103,6 +113,16 @@ const handleRest = (http, wa, idStr) => {
         fs.rmdirSync(__dirname + `/db/wa_auth/${idStr}`, { recursive: true, force: true });
         res.status(200).send("Loged out!").end();
     });
+
+    const sendMessages = async (receivers, messages, wa, httpRes) => {
+        for (var r = 0; r < receivers.length; r++) {
+            for (var m = 0; m < messages.length; m++) {
+                await wa.sendMessage(receivers[r], messages[m]);
+            }
+        }
+
+        httpRes.status(200).send("Message Sent!").end();
+    }
 }
 
 module.exports = handleRest;
