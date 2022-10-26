@@ -20,8 +20,26 @@
 
             <div class="device-container">
                 <h1><center>DEVICES</center></h1>
+                <center style="margin-bottom:15px;">Scan QR Code Side To Add Device</center>
                 <div class="devices">
-                
+                    <table>
+                        <tr>
+                            <th>ID DEVICE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </table>
+                </div>
+
+                <h1><center>CONTACTS</center></h1>
+                <center id="device-contacts" style="margin-bottom:15px;">Select Device Above To Display Contacts</center>
+                <div class="contacts">
+                    <table>
+                        <tr>
+                            <th>NAME</th>
+                            <th>ID</th>
+                            <th>TYPE</th>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
@@ -59,43 +77,104 @@
                     $('#qr-img').hide();
 
                     refreshDevices();
+                    selectDevice(id);
 
                     // Ketika device sudah terkoneksi maka
                     // Automatis merequest QR untuk device baru
                     setTimeout(() => {
                         initializeWA(randomString());
-                    }, 6000);
+                    }, 12000);
                 });
 
                 socket.on(`wa:logedout ${id}`, (device) => {
                     refreshDevices();
                 });
+
+                socket.on(`wa:contacts ${id}`, (contacts) => {
+                    displayContacts(JSON.parse(contacts));
+                });
             }
 
             const refreshDevices = () => {
-                let html = ``;
+                let html = `
+                    <table>
+                        </thead>
+                            <tr>
+                                <th>ID DEVICE</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
                 $.ajax({
                     url: `/devices`,
                     type: 'GET',
                     success: (data) => {
                         Object.keys(data).forEach((key, i) => {
-                            html = html + `<div class="device">
-                                <div id="${data[key]}" style="float: left;">${data[key]}</div>
-                                <div style="margin-left:40px; justify-content: start; align-items: flex-start; align-content: flex-start;">
-                                    <i id="btn-${data[key]}" onclick="copy('${data[key]}')" style="width:18px;height:18px;margin-left:10px;margin-right:10px;" data-feather="copy"></i>
-                                    <i onclick="logout('${data[key]}')" style="width:18px;height:18px;margin-left:10px;margin-right:10px;" data-feather="trash"></i>
-                                </div>
-                            </div>`;
+
+                            html = html + `
+                                <tr id="${data[key]}">
+                                    <td><span onclick="selectDevice('${data[key]}')">${data[key]}</span></td>
+                                    <td>
+                                        <i id="btn-${data[key]}" onclick="copy('${data[key]}')" style="width:18px;height:18px;margin-left:10px;margin-right:20px;" data-feather="copy"></i>
+                                        <i onclick="logout('${data[key]}')" style="width:18px;height:18px;margin-left:20px;margin-right:10px;" data-feather="trash"></i>
+                                    </td>
+                                </tr>
+                            `;
                         });
+                        html = html + '</tbody></table>';
                         $('.devices').html(html);
                         feather.replace();
                     }
                 });
             }
 
+            const fetchContacts = (id) => {
+                $.ajax({
+                    url: `${id}/contacts`,
+                    type: 'GET',
+                    success: (contacts) => {
+                        displayContacts(contacts);
+                    }
+                });
+                $('#device-contacts').html(`Device: <b>${id}</b>`);
+            }
+
+            const displayContacts = (contacts) => {
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>NAME</th>
+                                <th>ID</th>
+                                <th>TYPE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                Object.keys(contacts).forEach((key, i) => {
+                    html = html + `
+                        <tr>
+                            <td>${contacts[key].name}</td>
+                            <td>${contacts[key].id}</td>
+                            <td>${contacts[key].type}</td>
+                        </tr>
+                    `;
+                });
+
+                html = html + '</tbody></table>';
+                $('.contacts').html(html);
+            }
+
+            const selectDevice = (id) => {
+                $('.active').removeClass('active');
+                $(`#${id}`).addClass("active");
+                fetchContacts(id);
+            }
 
             const copy = (deviceId) => {
-                navigator.clipboard.writeText($(`#${deviceId}`).text());
+                navigator.clipboard.writeText($(`#${deviceId}`).text().trim());
                 $(`#btn-${deviceId}`).attr('data-feather', 'check');
                 feather.replace();
             }

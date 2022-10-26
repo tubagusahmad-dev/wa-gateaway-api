@@ -5,7 +5,7 @@ html, body {
 }
 
 .main-grid {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
@@ -73,8 +73,11 @@ html, body {
 }
 
 .device-container .devices {
-    display: grid;
-    grid-template-columns: 50% 50%;
+    min-height: 250px;
+}
+
+.device-container .contacts {
+    margin-bottom: 150px;
 }
 
 .device-container .devices .device {
@@ -87,6 +90,29 @@ html, body {
     margin: 15px;
     border: 1px solid blue;
 }
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+tr {
+    max-height: 40px;
+    padding: 0px;
+}
+
+tr.active {
+    background-color: #dddddd !important;
+    color:#fff;
+}
+  
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+  
 
 .loader {
     border: 8px solid #f3f3f3; /* Light grey */
