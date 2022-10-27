@@ -10,7 +10,7 @@
   "author": "tubagusahmad-dev",
   "license": "ISC",
   "dependencies": {
-    "@adiwajshing/baileys": "github:adiwajshing/baileys",
+    "@adiwajshing/baileys": "^4.4.0",
     "@hapi/boom": "^10.0.0",
     "body-parser": "^1.20.1",
     "dotenv": "^16.0.3",
