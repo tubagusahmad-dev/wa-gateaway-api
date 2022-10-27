@@ -10,7 +10,7 @@ Aplikasi ini adalah implementasi dari [@adiwajshing/Baileys](https://github.com/
 
 1. Download atau clone repo.
 2. Masuk ke direktori project.
-3. Instal dependency jalankan `(npm install --save)`.
+3. Jalankan `npm start`.
 
 ## Konfigurasi file `.env`
 
@@ -24,65 +24,109 @@ PORT=8000
 
 ## Dokumentasi API
 
-Endpoint API `http://APP_HOST/DEVICE_ID/send/message`
-Server akan mengirim response json:
+Endpoint: `http://APP_HOST/DEVICE_ID/send/message` value `DEVICE_ID` bisa kamu dapetin di daftar device di dashboard
+
+Response json dari pesan yg dikirim akan seperti ini:
 
 ```javascript
 {
-    success: true|false, // bool
-    message: "", // string
-    data: {}|[] // object atau array object
+    success: true|false, 
+    message: "", 
+    data: {}|[] 
 }
 ```
 
 ## Mengirim Pesan
 
-Semua pesan yg dikirim harus berupa json 
+Semua data pesan yg dikirim harus berupa json body 
 
-Contoh:
+### Penerima Pesan
+
+Kamu bisa ngirim satu kesan ke beberapa nomor atau beberapa pesan sekaligus dengan beberapa format berikut:
 
 ```javascript
-// Mengirim pesan teks
+// Mengirim pesan ke satu nomor dan satu pesan
 {
-    "receiver": "628231xxxxx", // Untuk mengirim ke banyak nomor ["628231xxxxx", "628231xxxxx"]
-    "message": {               // Untuk mengirim banyak pesan [Object, Object]
-        "text": "Hello there!"
+    "receiver": "628231xxxxx", 
+    "message": {               
+        // Object pesan
     }
 }
 
-// Mengirim pesan gambar
+// Mengirim pesan ke semua kontak yg tampil di dashboard 
 {
-    "receiver": "628231xxxxx",
-    "message": {
-        "image": {
-            "url": "https://example.com/logo.png"
-        },
-        "caption": "My logo"
+    "receiver": "all_contacts", 
+    "message": {               
+        // Object pesan
     }
 }
 
-// Mengirim pesan video
+// Mengirim pesan ke beberapa nomor pilihan dan mengirim beberapa pesan sekaligus
+// Tidak bisa pake value all_contacts
 {
-    "receiver": "628231xxxxx",
-    "message": {
-        "video": {
-            "url': "https://example.com/intro.mp4"
+    "receiver": ["628231xxxxx", "628231xxxxx", "628231xxxxx"], 
+    "message": [
+        {               
+            // Object pesan 1
         },
-        "caption": "My intro"
-    }
+        {               
+            // Object pesan 2
+        },
+        {               
+            // Object pesan 3
+        }
+    ]
 }
+```
 
-// Mengirim pesan dokumen
-{
-    "receiver": "628231xxxxx",
-    "message": {
-        "document": {
-            "url": "https://example.com/presentation.pdf"
-        },
-        "mimetype": "application/pdf",
-        "fileName": "presentation-1.pdf"
+### Object Pesan
+
+```javascript
+
+    // Mengirim pesan teks biasa
+    {
+        "receiver": "628231xxxxx",
+        "message": {
+            "text": {
+                "url": "https://example.com/logo.png"
+            }
+        }
     }
-}
+
+    // Mengirim pesan gambar
+    {
+        "receiver": "628231xxxxx",
+        "message": {
+            "image": {
+                "url": "https://example.com/logo.png"
+            },
+            "caption": "My logo"
+        }
+    }
+
+    // Mengirim pesan video
+    {
+        "receiver": "628231xxxxx",
+        "message": {
+            "video": {
+                "url': "https://example.com/intro.mp4"
+            },
+            "caption": "My intro"
+        }
+    }
+
+    // Mengirim pesan dokumen
+    {
+        "receiver": "628231xxxxx",
+        "message": {
+            "document": {
+                "url": "https://example.com/presentation.pdf"
+            },
+            "mimetype": "application/pdf",
+            "fileName": "presentation-1.pdf"
+        }
+    }
+
 ```
 
 Untuk contoh lainnya bisa lihat dokumentasi Baileys [disini](https://github.com/adiwajshing/Baileys#sending-messages).

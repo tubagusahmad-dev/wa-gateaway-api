@@ -25,6 +25,10 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/view/index.html');
 });
 
+app.get('/docs', (req, res) => {
+    res.sendFile(__dirname + '/view/dokumentasi.html');
+});
+
 app.get('/devices', (req, res) => {
     res.status(200).json(require('./lib/devices.js').get()).end();
 });

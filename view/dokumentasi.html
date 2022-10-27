@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            html, body {
+                font-family: Ubuntu;
+                padding-left: 10%;
+                padding-right: 10%;
+            }
+
+            code {
+                background-color: aqua;
+                padding: 3px;
+                border-radius: 3px;
+            }
+
+            pre {
+                width: 600px;
+            }
+            
+
+            .code {
+                background-color: rgb(88, 104, 104);
+                color: white;
+                border-radius: 10px;
+                padding: 15px;
+                overflow-x: scroll;
+            }
+
+            .code code {
+                background-color: transparent;
+                color: white;
+                padding: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 id="wa-gateaway-api">WA Gateaway API</h1>
+<p>Aplikasi ini adalah implementasi dari <a href="https://github.com/adiwajshing/Baileys">@adiwajshing/Baileys</a> sebuah RESTful API WhatsApp dengan yg mendukung multi device dan mudah digunakan.</p>
+<h2 id="persyaratan">Persyaratan</h2>
+<ul>
+<li><strong>NodeJS</strong> versi <strong>14.5.0</strong> atau diatasnya.</li>
+</ul>
+<h2 id="instalasi">Instalasi</h2>
+<ol>
+<li>Download atau clone repo.</li>
+<li>Masuk ke direktori project.</li>
+<li>Jalankan <code>npm start</code>.</li>
+</ol>
+<h2 id="konfigurasi-file-env">Konfigurasi file <code>.env</code></h2>
+<div class="code">
+<pre><code class="language-env">
+# Listening Host
+HOST=127.0.0.1
+
+# Listening Port
+PORT=8000
+</code></pre>
+</div>
+
+<h2 id="dokumentasi-api">Dokumentasi API</h2>
+Endpoint:
+<code>http://APP_HOST/DEVICE_ID/send/message</code> value <code>DEVICE_ID</code> bisa kamu dapetin di daftar device di dashboard</p>
+<p>Response json dari pesan yg dikirim akan seperti ini:</p>
+<div class="code">
+<pre><code class="language-javascript">
+{
+    success: true|false, 
+    message: &quot;&quot;, 
+    data: {}|[] 
+}
+</code></pre>
+</div>
+<h2 id="mengirim-pesan">Mengirim Pesan</h2>
+<p>Semua data pesan yg dikirim harus berupa json body
+<h3 id="penerima-pesan">Penerima Pesan</h3>
+<p>Kamu bisa ngirim satu kesan ke beberapa nomor atau beberapa pesan sekaligus dengan beberapa format berikut:</p>
+<div class="code">
+<pre><code class="language-javascript">
+// Mengirim pesan ke satu nomor dan satu pesan
+{
+    &quot;receiver&quot;: &quot;628231xxxxx&quot;, 
+    &quot;message&quot;: {               
+        // Object pesan
+    }
+}
+
+// Mengirim pesan ke semua kontak yg tampil di dashboard 
+{
+    &quot;receiver&quot;: &quot;all_contacts&quot;, 
+    &quot;message&quot;: {               
+        // Object pesan
+    }
+}
+
+// Mengirim pesan ke beberapa nomor pilihan dan mengirim beberapa pesan sekaligus
+// Tidak bisa pake value all_contacts
+{
+    &quot;receiver&quot;: [&quot;628231xxxxx&quot;, &quot;628231xxxxx&quot;, &quot;628231xxxxx&quot;], 
+    &quot;message&quot;: [
+        {               
+            // Object pesan 1
+        },
+        {               
+            // Object pesan 2
+        },
+        {               
+            // Object pesan 3
+        }
+    ]
+}
+</code></pre>
+</div>
+<h3 id="object-pesan">Object Pesan</h3>
+<div class="code">
+<pre><code class="language-javascript">
+    // Mengirim pesan teks biasa
+    {
+        &quot;receiver&quot;: &quot;628231xxxxx&quot;,
+        &quot;message&quot;: {
+            &quot;text&quot;: {
+                &quot;url&quot;: &quot;https://example.com/logo.png&quot;
+            }
+        }
+    }
+
+    // Mengirim pesan gambar
+    {
+        &quot;receiver&quot;: &quot;628231xxxxx&quot;,
+        &quot;message&quot;: {
+            &quot;image&quot;: {
+                &quot;url&quot;: &quot;https://example.com/logo.png&quot;
+            },
+            &quot;caption&quot;: &quot;My logo&quot;
+        }
+    }
+
+    // Mengirim pesan video
+    {
+        &quot;receiver&quot;: &quot;628231xxxxx&quot;,
+        &quot;message&quot;: {
+            &quot;video&quot;: {
+                &quot;url&#39;: &quot;https://example.com/intro.mp4&quot;
+            },
+            &quot;caption&quot;: &quot;My intro&quot;
+        }
+    }
+
+    // Mengirim pesan dokumen
+    {
+        &quot;receiver&quot;: &quot;628231xxxxx&quot;,
+        &quot;message&quot;: {
+            &quot;document&quot;: {
+                &quot;url&quot;: &quot;https://example.com/presentation.pdf&quot;
+            },
+            &quot;mimetype&quot;: &quot;application/pdf&quot;,
+            &quot;fileName&quot;: &quot;presentation-1.pdf&quot;
+        }
+    }
+</code></pre>
+</div>
+<p>Untuk contoh lainnya bisa lihat dokumentasi Baileys <a href="https://github.com/adiwajshing/Baileys#sending-messages">disini</a>.</p>
+
+    </body>
+</html>
